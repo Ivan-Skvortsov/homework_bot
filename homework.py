@@ -8,8 +8,8 @@ import requests
 import telegram
 from dotenv import load_dotenv
 
-from custom_exceptions import (ProgramVariablesNotSet, SendMessageError,
-                               WrongResponseStatusCode, WrongResponseStructure)
+from custom_exceptions import (ProgramVariablesNotSet, WrongResponseStatusCode,
+                               WrongResponseStructure)
 
 logging.basicConfig(
     level=logging.INFO,
@@ -43,7 +43,9 @@ def send_message(bot, message):
     try:
         bot.send_message(TELEGRAM_CHAT_ID, message)
     except Exception as err:
-        raise SendMessageError(err)
+        logger.error(f'Ошибка отправки сообщения в телеграм: {err}')
+    else:
+        logger.info(f'Сообщение успешно отправлено в телеграм: {message}')
 
 
 def get_api_answer(current_timestamp):
@@ -53,48 +55,71 @@ def get_api_answer(current_timestamp):
     """
     timestamp = current_timestamp or int(time.time())
     params = {'from_date': timestamp}
-    response = requests.get(url=ENDPOINT, headers=HEADERS, params=params)
-    if response.status_code != HTTPStatus.OK:
-        raise WrongResponseStatusCode(
-            f'Эндпойнт {response.url} недоступен! '
-            f'Код ответа: {response.status_code}'
-        )
-    return response.json()
+    try:
+        response = requests.get(url=ENDPOINT, headers=HEADERS, params=params)
+    except Exception as err:
+        logger.error(f'Ошибка обращения к основному API: {err}')
+        raise
+    else:
+        if response.status_code != HTTPStatus.OK:
+            err = (
+                f'Эндпойнт {response.url} недоступен! '
+                f'Код ответа: {response.status_code}'
+            )
+            logger.error(err)
+            raise WrongResponseStatusCode(err)
+        return response.json()
 
 
 def check_response(response):
     """Check structure of response. Return list of homeworks."""
     if not isinstance(response, dict):
         # Если здесь rase'ить исключение - не проходит тесты
-        return WrongResponseStructure(
+        err = (
             'Получен неверный тип данных. Ожидаемый тип: dict.'
             f'Полученный тип: {type(response)}'
         )
+        logger.error(err)
+        return WrongResponseStructure(err)
     if not response:
-        raise WrongResponseStructure(
+        err = (
             'Получена неверная структура данных: словарь пуст.'
         )
+        logger.error(err)
+        raise WrongResponseStructure(err)
     if 'homeworks' not in response:
-        raise WrongResponseStructure(
+        err = (
             'Получена неверная структура данных: не найден ключ `homeworks`.'
         )
+        logger.error(err)
+        raise WrongResponseStructure(err)
     if not isinstance(response['homeworks'], list):
         hw_type = type(response['homeworks'])
-        raise WrongResponseStructure(
+        err = (
             'Получена неверная структура данных. Ожидаемый тип данных по ключу'
             f' `homeworks`: list. Полученный тип: {hw_type}'
         )
+        logger.error(err)
+        raise WrongResponseStructure(err)
     return response['homeworks']
 
 
 def parse_status(homework):
     """Parse status of homework, returns verdict as string or None."""
-    homework_name = homework['homework_name']
-    homework_status = homework['status']
-    verdict = VERDICTS[homework_status]
-    if not homework_status:
-        return None
-    return f'Изменился статус проверки работы "{homework_name}". {verdict}'
+    try:
+        homework_name = homework['homework_name']
+        homework_status = homework['status']
+        verdict = VERDICTS[homework_status]
+    except KeyError as err:
+        logger.error(f'Ошибка обработки полученных данных: {err}')
+        raise
+    except TypeError as err:
+        logger.error(f'Ошибка обработки полученных данных: {err}')
+        raise
+    else:
+        if not homework_status:
+            return None
+        return f'Изменился статус проверки работы "{homework_name}". {verdict}'
 
 
 def check_tokens():
@@ -122,15 +147,7 @@ def main():
                 homework_status = parse_status(homework)
                 if homework_status:
                     send_message(bot, homework_status)
-                    logger.info(
-                        f'Сообщение успешно отправлено в телеграм:'
-                        f' {homework_status}'
-                    )
             current_timestamp = int(time.time())
-            time.sleep(RETRY_TIME)
-
-        except SendMessageError as err:
-            logger.error(f'Ошибка отправки сообщения в телеграм: {err}')
             time.sleep(RETRY_TIME)
 
         except Exception as err:
@@ -138,7 +155,6 @@ def main():
             if message != previous_error_message:
                 send_message(bot, message)
                 previous_error_message = message
-            logger.error(message)
             time.sleep(RETRY_TIME)
         else:
             if not homework_list:

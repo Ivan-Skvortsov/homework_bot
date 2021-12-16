@@ -14,9 +14,3 @@ class WrongResponseStructure(Exception):
     """Exception to raise when invalid response structure recieved."""
 
     pass
-
-
-class SendMessageError(Exception):
-    """Exception to raise when send message to telegram failed."""
-
-    pass
