@@ -1,18 +1,15 @@
+import logging
 import os
 import sys
 import time
-import logging
+from http import HTTPStatus
+
 import requests
 import telegram
-from custom_exceptions import (
-    ProgramVariablesNotSet,
-    SendMessageError,
-    WrongResponseStatusCode,
-    WrongResponseStructure
-)
-
-from http import HTTPStatus
 from dotenv import load_dotenv
+
+from custom_exceptions import (ProgramVariablesNotSet, SendMessageError,
+                               WrongResponseStatusCode, WrongResponseStructure)
 
 logging.basicConfig(
     level=logging.DEBUG,
@@ -29,7 +26,7 @@ TELEGRAM_TOKEN = os.getenv('TELEGRAM_TOKEN')
 TELEGRAM_CHAT_ID = os.getenv('TELEGRAM_CHAT_ID')
 
 
-RETRY_TIME = 10  # 600
+RETRY_TIME = 600
 ENDPOINT = 'https://practicum.yandex.ru/api/user_api/homework_statuses/'
 HEADERS = {'Authorization': f'OAuth {PRACTICUM_TOKEN}'}
 
