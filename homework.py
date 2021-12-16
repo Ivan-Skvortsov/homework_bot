@@ -161,8 +161,6 @@ def main():
         else:
             if not homework_list:
                 logger.debug('Проверка выполнена успешно. Обновлений нет.')
-                send_message(bot, 'Проверка выполнена успешно. Обновлений нет.')
-
 
 
 if __name__ == '__main__':
