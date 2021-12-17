@@ -8,8 +8,8 @@ import requests
 import telegram
 from dotenv import load_dotenv
 
-from custom_exceptions import (ProgramVariablesNotSet, WrongResponseStatusCode,
-                               WrongResponseStructure, ParseHomeworkerror)
+from custom_exceptions import (APIRequestError, ParseHomeworkerror,
+                               ProgramVariablesNotSet, WrongResponseStructure)
 
 logging.basicConfig(
     level=logging.INFO,
@@ -59,7 +59,7 @@ def get_api_answer(current_timestamp):
         result = response.json()
     except Exception as err:
         logger.error(f'Ошибка обращения к основному API: {err}')
-        raise
+        raise APIRequestError(err)
     else:
         if response.status_code != HTTPStatus.OK:
             err = (
@@ -67,7 +67,7 @@ def get_api_answer(current_timestamp):
                 f'Код ответа: {response.status_code}'
             )
             logger.error(err)
-            raise WrongResponseStatusCode(err)
+            raise APIRequestError(err)
         return result
 
 

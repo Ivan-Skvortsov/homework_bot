@@ -4,12 +4,6 @@ class ProgramVariablesNotSet(Exception):
     pass
 
 
-class WrongResponseStatusCode(ConnectionError):
-    """Exception to raise when wrong response status code recieved."""
-
-    pass
-
-
 class WrongResponseStructure(Exception):
     """Exception to raise when invalid response structure recieved."""
 
@@ -18,5 +12,11 @@ class WrongResponseStructure(Exception):
 
 class ParseHomeworkerror(Exception):
     """Exception to raise when homework parsing errors appears."""
+
+    pass
+
+
+class APIRequestError(Exception):
+    """Exception to raise when API requesting errors appears."""
 
     pass
