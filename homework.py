@@ -8,8 +8,8 @@ import requests
 import telegram
 from dotenv import load_dotenv
 
-from custom_exceptions import (APIRequestError, ParseHomeworkerror,
-                               ProgramVariablesNotSet, WrongResponseStructure)
+from custom_exceptions import (APIRequestError, ProgramVariablesNotSet,
+                               WrongResponseStructure)
 
 logging.basicConfig(
     level=logging.INFO,
@@ -112,10 +112,10 @@ def parse_status(homework):
         verdict = VERDICTS[homework_status]
     except KeyError as err:
         logger.error(f'Ошибка обработки полученных данных: {err}')
-        raise ParseHomeworkerror(err)
+        raise KeyError(err)
     except TypeError as err:
         logger.error(f'Ошибка обработки полученных данных: {err}')
-        raise ParseHomeworkerror(err)
+        raise TypeError(err)
     else:
         if not homework_status:
             return None

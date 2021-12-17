@@ -10,12 +10,6 @@ class WrongResponseStructure(Exception):
     pass
 
 
-class ParseHomeworkerror(Exception):
-    """Exception to raise when homework parsing errors appears."""
-
-    pass
-
-
 class APIRequestError(Exception):
     """Exception to raise when API requesting errors appears."""
 
