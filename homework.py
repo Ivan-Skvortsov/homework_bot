@@ -42,9 +42,10 @@ def send_message(bot, message):
     """Sends message to telegram bot."""
     try:
         bot.send_message(TELEGRAM_CHAT_ID, message)
-        logger.info(f'Сообщение успешно отправлено в телеграм: {message}')
     except Exception as err:
         logger.error(f'Ошибка отправки сообщения в телеграм: {err}')
+    else:
+        logger.info(f'Сообщение успешно отправлено в телеграм: {message}')
 
 
 def get_api_answer(current_timestamp):
@@ -60,15 +61,14 @@ def get_api_answer(current_timestamp):
     except Exception as err:
         logger.error(f'Ошибка обращения к основному API: {err}')
         raise APIRequestError(err)
-    else:
-        if response.status_code != HTTPStatus.OK:
-            err = (
-                f'Эндпойнт {response.url} недоступен! '
-                f'Код ответа: {response.status_code}'
-            )
-            logger.error(err)
-            raise APIRequestError(err)
-        return result
+    if response.status_code != HTTPStatus.OK:
+        err = (
+            f'Эндпойнт {response.url} недоступен! '
+            f'Код ответа: {response.status_code}'
+        )
+        logger.error(err)
+        raise APIRequestError(err)
+    return result
 
 
 def check_response(response):
