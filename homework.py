@@ -9,7 +9,7 @@ import telegram
 from dotenv import load_dotenv
 
 from custom_exceptions import (ProgramVariablesNotSet, WrongResponseStatusCode,
-                               WrongResponseStructure)
+                               WrongResponseStructure, ParseHomeworkerror)
 
 logging.basicConfig(
     level=logging.INFO,
@@ -42,10 +42,9 @@ def send_message(bot, message):
     """Sends message to telegram bot."""
     try:
         bot.send_message(TELEGRAM_CHAT_ID, message)
+        logger.info(f'Сообщение успешно отправлено в телеграм: {message}')
     except Exception as err:
         logger.error(f'Ошибка отправки сообщения в телеграм: {err}')
-    else:
-        logger.info(f'Сообщение успешно отправлено в телеграм: {message}')
 
 
 def get_api_answer(current_timestamp):
@@ -57,6 +56,7 @@ def get_api_answer(current_timestamp):
     params = {'from_date': timestamp}
     try:
         response = requests.get(url=ENDPOINT, headers=HEADERS, params=params)
+        result = response.json()
     except Exception as err:
         logger.error(f'Ошибка обращения к основному API: {err}')
         raise
@@ -68,7 +68,7 @@ def get_api_answer(current_timestamp):
             )
             logger.error(err)
             raise WrongResponseStatusCode(err)
-        return response.json()
+        return result
 
 
 def check_response(response):
@@ -112,10 +112,10 @@ def parse_status(homework):
         verdict = VERDICTS[homework_status]
     except KeyError as err:
         logger.error(f'Ошибка обработки полученных данных: {err}')
-        raise
+        raise ParseHomeworkerror(err)
     except TypeError as err:
         logger.error(f'Ошибка обработки полученных данных: {err}')
-        raise
+        raise ParseHomeworkerror(err)
     else:
         if not homework_status:
             return None

@@ -14,3 +14,9 @@ class WrongResponseStructure(Exception):
     """Exception to raise when invalid response structure recieved."""
 
     pass
+
+
+class ParseHomeworkerror(Exception):
+    """Exception to raise when homework parsing errors appears."""
+
+    pass
