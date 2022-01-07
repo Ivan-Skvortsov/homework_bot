@@ -139,16 +139,17 @@ def main():
     bot = telegram.Bot(token=TELEGRAM_TOKEN)
     current_timestamp = int(time.time())
     previous_error_message = ''
-    previous_hw_status = ''
+    # previous_hw_status = ''
     while True:
         try:
             response = get_api_answer(current_timestamp)
             homework_list = check_response(response)
             for homework in homework_list:
                 homework_status = parse_status(homework)
-                if homework_status and homework_status != previous_hw_status:
+                # if homework_status and homework_status != previous_hw_status:
+                if homework_status:
                     send_message(bot, homework_status)
-                    previous_hw_status = homework_status
+                    # previous_hw_status = homework_status
             current_timestamp = int(time.time())
             time.sleep(RETRY_TIME)
 
